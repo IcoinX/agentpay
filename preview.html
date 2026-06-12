@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentPay — Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { background: #0a0a0f; color: #e8e8f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  .progress-bar { transition: width 0.5s ease; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="border-b border-white/10 px-6 py-4 flex items-center justify-between">
+  <div class="flex items-center gap-3">
+    <div class="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center font-bold text-sm text-white">A</div>
+    <span class="font-semibold text-lg text-white">AgentPay</span>
+    <span class="text-xs bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded-full">Dashboard</span>
+  </div>
+  <div class="flex items-center gap-3">
+    <span class="text-sm text-white/40">Base Mainnet</span>
+    <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+    <button onclick="document.getElementById('modal').classList.remove('hidden')"
+      class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-4 py-2 rounded-lg transition-colors">
+      + New Agent
+    </button>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-6 py-8">
+
+  <!-- STATS -->
+  <div class="grid grid-cols-4 gap-4 mb-8" id="stats"></div>
+
+  <div class="grid grid-cols-3 gap-6">
+    <!-- AGENTS -->
+    <div class="col-span-2">
+      <h2 class="text-sm font-medium text-white/60 uppercase tracking-wider mb-4">Agent Fleet</h2>
+      <div id="agents" class="space-y-3"></div>
+    </div>
+    <!-- TXS -->
+    <div>
+      <h2 class="text-sm font-medium text-white/60 uppercase tracking-wider mb-4">Recent Transactions</h2>
+      <div id="txs" class="space-y-2"></div>
+    </div>
+  </div>
+</main>
+
+<!-- MODAL -->
+<div id="modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+  <div class="bg-[#13131f] border border-white/10 rounded-2xl p-6 w-full max-w-md">
+    <h3 class="text-lg font-semibold mb-4 text-white">Create New Agent Wallet</h3>
+    <div class="space-y-4">
+      <div>
+        <label class="text-sm text-white/60 mb-1 block">Agent Name</label>
+        <input id="agentName" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-indigo-500" placeholder="e.g. Data Analyst Agent">
+      </div>
+      <div>
+        <label class="text-sm text-white/60 mb-1 block">Daily Limit (USDC)</label>
+        <input id="agentLimit" type="number" value="100" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-indigo-500">
+      </div>
+      <div class="flex gap-2 pt-2">
+        <button onclick="document.getElementById('modal').classList.add('hidden')"
+          class="flex-1 bg-white/5 hover:bg-white/10 text-white text-sm px-4 py-2 rounded-lg transition-colors">Cancel</button>
+        <button onclick="createAgent()"
+          class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-4 py-2 rounded-lg transition-colors">Create Wallet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let agents = [
+  { id: 'agent-001', address: '0x1a2b3c4d5e6f7890', label: 'Research Agent', limit: 50, spent: 12.4, balance: 245.6, txs: 8 },
+  { id: 'agent-002', address: '0x7a8b9c0d1e2f3456', label: 'Code Agent', limit: 100, spent: 67.2, balance: 89.3, txs: 23 },
+  { id: 'agent-003', address: '0x3c4d5e6f7a8b9012', label: 'Data Pipeline Agent', limit: 200, spent: 0, balance: 500.0, txs: 0 },
+];
+
+const txs = [
+  { agent: 'Research Agent', to: 'OpenAI API', amount: 4.2, time: '2 min ago' },
+  { agent: 'Code Agent', to: 'Anthropic API', amount: 8.1, time: '5 min ago' },
+  { agent: 'Code Agent', to: 'GitHub Copilot', amount: 3.5, time: '12 min ago' },
+  { agent: 'Research Agent', to: 'Perplexity API', amount: 2.0, time: '1 hr ago' },
+  { agent: 'Code Agent', to: 'Vercel', amount: 12.4, time: '3 hr ago' },
+];
+
+function render() {
+  const totalBalance = agents.reduce((s, a) => s + a.balance, 0);
+  const totalSpent = agents.reduce((s, a) => s + a.spent, 0);
+  const totalTx = agents.reduce((s, a) => s + a.txs, 0);
+
+  document.getElementById('stats').innerHTML = [
+    { label: 'Active Agents', value: agents.length, sub: 'on Base' },
+    { label: 'Total Balance', value: '$' + totalBalance.toFixed(2), sub: 'USDC' },
+    { label: 'Spent Today', value: '$' + totalSpent.toFixed(2), sub: 'across all agents' },
+    { label: 'Transactions', value: totalTx, sub: 'last 24h' },
+  ].map(s => `
+    <div class="bg-white/5 border border-white/10 rounded-xl p-4">
+      <p class="text-white/40 text-sm mb-1">${s.label}</p>
+      <p class="text-2xl font-bold text-white">${s.value}</p>
+      <p class="text-white/30 text-xs mt-1">${s.sub}</p>
+    </div>`).join('');
+
+  document.getElementById('agents').innerHTML = agents.map(a => {
+    const pct = a.limit > 0 ? (a.spent / a.limit) * 100 : 0;
+    const color = pct > 80 ? 'bg-red-400' : pct > 50 ? 'bg-yellow-400' : 'bg-indigo-400';
+    const badge = pct > 80 ? 'bg-red-500/20 text-red-400' : pct > 50 ? 'bg-yellow-500/20 text-yellow-400' : 'bg-green-500/20 text-green-400';
+    return `
+    <div class="bg-white/5 border border-white/10 rounded-xl p-4 hover:border-indigo-500/40 transition-colors">
+      <div class="flex items-start justify-between mb-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded bg-indigo-500/30 flex items-center justify-center text-xs text-indigo-400">${a.label[0]}</div>
+            <span class="font-medium text-white">${a.label}</span>
+            <span class="text-xs px-2 py-0.5 rounded-full font-medium ${badge}">${pct.toFixed(0)}% used</span>
+          </div>
+          <p class="text-white/30 text-xs mt-1 font-mono">${a.address}</p>
+        </div>
+        <div class="text-right">
+          <p class="font-semibold text-white">$${a.balance.toFixed(2)}</p>
+          <p class="text-white/40 text-xs">USDC balance</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-4 text-sm text-white/50">
+        <span>$${a.spent.toFixed(2)} / $${a.limit} today</span>
+        <span>·</span><span>${a.txs} txs</span>
+      </div>
+      <div class="mt-2 h-1 bg-white/10 rounded-full overflow-hidden">
+        <div class="h-full rounded-full progress-bar ${color}" style="width:${Math.min(pct,100)}%"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('txs').innerHTML = txs.map(t => `
+    <div class="bg-white/5 border border-white/10 rounded-lg p-3">
+      <div class="flex justify-between items-start">
+        <div>
+          <p class="text-sm font-medium text-white">${t.to}</p>
+          <p class="text-xs text-white/40">${t.agent}</p>
+        </div>
+        <div class="text-right">
+          <p class="text-sm font-semibold text-red-400">-$${t.amount}</p>
+          <p class="text-xs text-white/30">${t.time}</p>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function createAgent() {
+  const label = document.getElementById('agentName').value;
+  const limit = Number(document.getElementById('agentLimit').value);
+  if (!label) return;
+  agents.push({
+    id: 'agent-' + Date.now(),
+    address: '0x' + Math.random().toString(16).slice(2, 18),
+    label, limit, spent: 0, balance: 0, txs: 0
+  });
+  document.getElementById('modal').classList.add('hidden');
+  document.getElementById('agentName').value = '';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
