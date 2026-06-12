@@ -174,4 +174,8 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-white/10 py-8 text-center text-white/30 text-sm">
-        <p>AgentPay · Built on Base · USDC-na
+        <p>AgentPay · Built on Base · USDC-native · © 2026</p>
+      </footer>
+    </div>
+  )
+}
