@@ -32,8 +32,8 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-6">
           <Link href="/dashboard" className="text-sm text-white/60 hover:text-white transition-colors">Dashboard</Link>
-          <a href="#quickstart" className="text-sm text-white/60 hover:text-white transition-colors">Docs</a>
-          <a href="https://github.com" className="text-sm bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-lg transition-colors">GitHub</a>
+          <Link href="/docs" className="text-sm text-white/60 hover:text-white transition-colors">Docs</Link>
+          <a href="https://github.com/IcoinX/agentpay" target="_blank" rel="noopener noreferrer" className="text-sm bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-lg transition-colors">GitHub</a>
           <Link href="/dashboard" className="text-sm bg-indigo-600 hover:bg-indigo-500 px-4 py-1.5 rounded-lg transition-colors">
             Get started
           </Link>
@@ -164,7 +164,7 @@ export default function Home() {
           <h2 className="text-3xl font-bold mb-4">Ready to deploy your first agent wallet?</h2>
           <p className="text-white/50 mb-8">Free tier includes 10 agent wallets and 1,000 transactions/month.</p>
           <Link
-            href="/dashboard"
+            href="/docs"
             className="inline-block bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-10 py-3 rounded-xl transition-colors text-lg"
           >
             Start building →
@@ -174,8 +174,4 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-white/10 py-8 text-center text-white/30 text-sm">
-        <p>AgentPay · Built on Base · USDC-native · © 2026</p>
-      </footer>
-    </div>
-  )
-}
+        <p>AgentPay · Built on Base · USDC-na
