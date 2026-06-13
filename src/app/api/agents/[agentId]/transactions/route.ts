@@ -11,9 +11,8 @@ export async function GET(
   }
 
   const { agentId } = params
-  const raw = await redis.lrange(txsKey(apiKey, agentId), 0, 99)
-
-  const transactions = raw.map((item: string) => JSON.parse(item))
+  // Upstash auto-deserializes — items are already objects, no JSON.parse needed
+  const transactions = await redis.lrange(txsKey(apiKey, agentId), 0, 99)
 
   return NextResponse.json({ transactions })
 }
