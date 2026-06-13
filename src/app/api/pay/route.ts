@@ -20,12 +20,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'agentId, amount and to are required' }, { status: 400 })
   }
 
-  const raw = await redis.get(agentKey(apiKey, agentId))
-  if (!raw) {
+  // Upstash auto-deserializes — agent is already an object, no JSON.parse needed
+  const agent = await redis.get(agentKey(apiKey, agentId)) as any
+  if (!agent) {
     return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
   }
-
-  const agent = JSON.parse(raw as string)
 
   // Reset daily spend if new day
   const today = new Date().toISOString().split('T')[0]
@@ -55,10 +54,11 @@ export async function POST(request: Request) {
   }
 
   agent.spentToday += amount
-  await redis.set(agentKey(apiKey, agentId), JSON.stringify(agent))
+  // Store objects directly — Upstash auto-serializes
+  await redis.set(agentKey(apiKey, agentId), agent)
 
   // Prepend tx, keep last 100
-  await redis.lpush(txsKey(apiKey, agentId), JSON.stringify(tx))
+  await redis.lpush(txsKey(apiKey, agentId), tx)
   await redis.ltrim(txsKey(apiKey, agentId), 0, 99)
 
   return NextResponse.json(tx)
