@@ -33,7 +33,8 @@ export async function POST(request: Request) {
     createdAt: new Date().toISOString(),
   }
 
-  await redis.set(agentKey(apiKey, agentId), JSON.stringify(agent))
+  // Upstash auto-serializes objects — no JSON.stringify needed
+  await redis.set(agentKey(apiKey, agentId), agent)
   await redis.sadd(agentsSetKey(apiKey), agentId)
 
   return NextResponse.json(agent, { status: 201 })
@@ -51,11 +52,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ agents: [] })
   }
 
+  // Upstash auto-deserializes — no JSON.parse needed
   const agents = await Promise.all(
-    agentIds.map(async (id: string) => {
-      const data = await redis.get(agentKey(apiKey, id))
-      return data ? JSON.parse(data as string) : null
-    })
+    agentIds.map((id: string) => redis.get(agentKey(apiKey, id)))
   )
 
   return NextResponse.json({ agents: agents.filter(Boolean) })
