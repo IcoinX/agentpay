@@ -32,19 +32,19 @@ export async function GET(
   }
 
   const { agentId } = params
-  const raw = await redis.get(agentKey(apiKey, agentId))
-  if (!raw) {
+  // Upstash auto-deserializes — agent is already an object, no JSON.parse needed
+  const agent = await redis.get(agentKey(apiKey, agentId)) as any
+  if (!agent) {
     return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
   }
-
-  const agent = JSON.parse(raw as string)
 
   // Reset spentToday if it's a new day
   const today = new Date().toISOString().split('T')[0]
   if (agent.lastReset !== today) {
     agent.spentToday = 0
     agent.lastReset = today
-    await redis.set(agentKey(apiKey, agentId), JSON.stringify(agent))
+    // Store object directly — Upstash auto-serializes
+    await redis.set(agentKey(apiKey, agentId), agent)
   }
 
   const usdc = await getUSDCBalance(agent.address)
