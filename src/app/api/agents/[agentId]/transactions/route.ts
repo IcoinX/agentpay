@@ -1,37 +1,19 @@
 import { NextResponse } from 'next/server'
-
-interface Transaction {
-  hash: string
-  agentId: string
-  from: string
-  to: string
-  toLabel: string
-  amount: number
-  timestamp: string
-  status: 'confirmed' | 'pending' | 'failed'
-}
-
-declare const globalThis: {
-  txStore?: Map<string, Transaction[]>
-}
-
-function getTxStore() {
-  if (!globalThis.txStore) globalThis.txStore = new Map()
-  return globalThis.txStore
-}
+import { redis, txsKey } from '@/lib/redis'
 
 export async function GET(
-  req: Request,
+  request: Request,
   { params }: { params: { agentId: string } }
 ) {
-  const apiKey = req.headers.get('x-api-key')
+  const apiKey = request.headers.get('x-api-key')
   if (!apiKey) {
     return NextResponse.json({ error: 'Missing x-api-key header' }, { status: 401 })
   }
 
-  const txStore = getTxStore()
-  const key = `${apiKey}:${params.agentId}`
-  const transactions = txStore.get(key) ?? []
+  const { agentId } = params
+  const raw = await redis.lrange(txsKey(apiKey, agentId), 0, 99)
+
+  const transactions = raw.map((item: string) => JSON.parse(item))
 
   return NextResponse.json({ transactions })
 }
